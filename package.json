@@ -10,8 +10,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@wagmi/connectors": "^5.8.5",
+    "@wagmi/core": "^2.17.3",
     "ethers": "^6.0.0",
     "phaser": "^3.60.0",
-    "vite": "^4.0.0"
+    "viem": "^2.31.0",
+    "vite": "^4.0.0",
+    "wagmi": "^2.15.6"
   }
 }
