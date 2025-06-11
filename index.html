@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /> <!-- Вказує кодування символів як UTF-8 -->
+  <title>Sheep Sorter Monad</title> <!-- Назва сторінки -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <!-- Адаптація для мобільних пристроїв -->
+  <style>
+    /* Скидаємо відступи, приховуємо прокрутку */
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+
+    /* Кнопка рестарту по центру внизу */
+    #restartBtn {
+      position: absolute; /* Абсолютне позиціонування */
+      bottom: 60px; /* Відступ віднизу */
+      left: 50%; /* Центрування по горизонталі */
+      transform: translateX(-50%); /* Точне горизонтальне центрування */
+      font-size: 24px; /* Розмір тексту */
+      padding: 10px 20px; /* Внутрішні відступи */
+      display: none; /* Прихована за замовчуванням */
+      z-index: 10; /* Поверх інших елементів */
+    }
+
+    /* Поле вводу імені нижче кнопки */
+    #playerName {
+      position: absolute; /* Абсолютне позиціонування */
+      bottom: 20px; /* Відступ віднизу */
+      left: 50%; /* Центрування по горизонталі */
+      transform: translateX(-50%); /* Точне горизонтальне центрування */
+      font-size: 20px; /* Розмір тексту */
+      padding: 10px; /* Внутрішні відступи */
+      z-index: 10; /* Поверх інших елементів */
+      display: none; /* Приховане за замовчуванням */
+    }
+
+    /* Адаптивність для мобільних пристроїв */
+    @media (max-width: 600px) {
+      #restartBtn, #playerName {
+        font-size: 18px; /* Зменшення розміру тексту на маленьких екранах */
+        padding: 8px 16px; /* Зменшення відступів */
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Кнопка Рестарту -->
+  <button id="restartBtn">Restart</button>
+
+  <!-- Поле вводу імені -->
+  <input id="playerName" type="text" placeholder="Your name">
+
+  <!-- JavaScript -->
+  <script type="module" src="/src/main.js"></script> <!-- Підключення основного скрипту -->
+</body>
+</html>
