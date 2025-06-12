@@ -203,11 +203,8 @@ connectWalletBtn.addEventListener("click", async () => {
 //   const top = data.filter(e=>typeof e.score==="number")
 //                   .sort((a,b)=>b.score-a.score).slice(0,5);
 //   localStorage.setItem("leaderboard", JSON.stringify(top));
-
-  submitScoreToBlockchain(score); // ✅ ВИКЛИК СЮДИ
-}
-
-
+//   submitScoreToBlockchain(score); // ✅ ВИКЛИК СЮДИ
+// }
   // function drawLeaderboard() {
   //   const data = JSON.parse(localStorage.getItem("leaderboard")||"[]");
   //   ctx.fillStyle="rgba(255,255,255,0.9)";
