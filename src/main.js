@@ -40,13 +40,16 @@ async function fetchLeaderboardFromBlockchain(ctx, score) {
     // Знаходимо записи користувача в повному лідерборді
     const player = leaderboard.find(e => e.player.toLowerCase() === userAddress);
 
-if (!player) {
-  // Якщо немає запису, додаємо вручну
-  sorted.push({
+let currentPlayer = player;
+
+if (!currentPlayer) {
+  currentPlayer = {
     player: userAddress,
-    score: score // поточний локальний рахунок (якщо є)
-  });
+    score: score
+  };
+  sorted.push(currentPlayer);
 }
+
 
     // Малюємо фон лідерборду
     ctx.fillStyle = "rgba(255,255,255,0.9)";
@@ -64,12 +67,24 @@ if (!player) {
     });
 
     // Якщо користувач НЕ в топ 5, але є в лідерборді — виводимо окремо
-    const isUserInTop = sorted.some(e => e.player === userAddress);
-    if (!isUserInTop && player) {
-      ctx.fillStyle = "blue";
-      const shortAddr = `${player.player.slice(0, 6)}...${player.player.slice(-4)}`;
-      ctx.fillText(`You: ${shortAddr}: ${Number(player.score)}`, 220, 210 + sorted.length * 30 + 20);
-    }
+const isUserInTop = sorted.some(e => e.player === userAddress);
+if (!isUserInTop && currentPlayer) {
+  ctx.fillStyle = "blue";
+  const shortAddr = `${currentPlayer.player.slice(0, 6)}...${currentPlayer.player.slice(-4)}`;
+  ctx.fillText(`You: ${shortAddr}: ${Number(currentPlayer.score)}`, 220, 210 + sorted.length * 30 + 20);
+}
+
+
+const isUserInTop = sorted.some(e => e.player === userAddress);
+if (!isUserInTop && currentPlayer) {
+  ctx.fillStyle = "blue";
+  const shortAddr = `${currentPlayer.player.slice(0, 6)}...${currentPlayer.player.slice(-4)}`;
+  ctx.fillText(`You: ${shortAddr}: ${Number(currentPlayer.score)}`, 220, 210 + sorted.length * 30 + 20);
+}
+
+
+
+
 
   } catch (error) {
     console.error("❌ Не вдалося отримати лідерборд з блокчейну:", error);
