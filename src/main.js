@@ -167,7 +167,9 @@ window.addEventListener("DOMContentLoaded", () => {
   function spawnSheep() {
     const imgData = sheepImages[Math.floor(Math.random() * sheepImages.length)];
     const img = new Image(); img.src = imgData.src;
-    let speed = 2 + Math.random() + level * 0.8;
+    let baseSpeed = 2 + Math.random();
+let levelBonus = 1 + (level - 1) * 0.1; // +10% за кожен новий рівень
+let speed = baseSpeed * levelBonus;
     if (imgData.type === "sheep-big") speed = 1 + level * 0.5;
     if (slowMotion) speed *= 0.5;
     sheepList.push({ img, x: Math.random() * (GAME_WIDTH - 80), y: -80, speed, type: imgData.type });
