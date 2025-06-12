@@ -1,8 +1,6 @@
-// src/main.js — запускається через <script type="module" src="/src/main.js">
 import { ethers } from "ethers";
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from "./contractABI.js";
 
-// відправка score в блокчейн
 async function submitScoreToBlockchain(score) {
   if (typeof window.ethereum === "undefined") {
     console.warn("🦊 MetaMask не встановлений");
@@ -13,7 +11,6 @@ async function submitScoreToBlockchain(score) {
     const provider = new ethers.BrowserProvider(window.ethereum);
     const signer = await provider.getSigner();
     const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-
     const tx = await contract.submitScore(score);
     console.log("⏳ Транзакція створена:", tx.hash);
     await tx.wait();
@@ -23,17 +20,16 @@ async function submitScoreToBlockchain(score) {
   }
 }
 
-async function fetchLeaderboardFromBlockchain() {
+async function fetchLeaderboardFromBlockchain(ctx) {
   try {
     const provider = new ethers.BrowserProvider(window.ethereum);
     const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
-    const leaderboard = await contract.getTopPlayers(); // 🔥 адаптуй до свого ABI
+    const leaderboard = await contract.getTopPlayers();
 
-    // Очистка і рендер
-    ctx.fillStyle="rgba(255,255,255,0.9)";
+    ctx.fillStyle = "rgba(255,255,255,0.9)";
     ctx.fillRect(200, 150, 400, 200);
-    ctx.fillStyle="purple";
-    ctx.font="18px Arial";
+    ctx.fillStyle = "purple";
+    ctx.font = "18px Arial";
     ctx.fillText("🏆 Leaderboard:", 300, 180);
 
     leaderboard.forEach((entry, i) => {
@@ -45,10 +41,7 @@ async function fetchLeaderboardFromBlockchain() {
   }
 }
 
-
-// Запускаємо, коли DOM завантажено
 window.addEventListener("DOMContentLoaded", () => {
-  // 🎨 Створюємо canvas і додаємо до body
   const canvas = document.createElement("canvas");
   canvas.style.position = "absolute";
   canvas.style.top = 0;
@@ -57,33 +50,26 @@ window.addEventListener("DOMContentLoaded", () => {
   const ctx = canvas.getContext("2d");
 
   const connectWalletBtn = document.getElementById("connectWalletBtn");
+  connectWalletBtn.addEventListener("click", async () => {
+    if (typeof window.ethereum === "undefined") {
+      alert("MetaMask не встановлено. Встанови його з https://metamask.io/");
+      return;
+    }
 
-connectWalletBtn.addEventListener("click", async () => {
-  if (typeof window.ethereum === "undefined") {
-    alert("MetaMask не встановлено. Встанови його з https://metamask.io/");
-    return;
-  }
+    try {
+      const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+      const walletAddress = accounts[0];
+      connectWalletBtn.innerText = `✅ ${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`;
+      connectWalletBtn.disabled = true;
+    } catch (err) {
+      console.error("❌ Підключення MetaMask скасовано або помилка:", err);
+    }
+  });
 
-  try {
-    const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-    const walletAddress = accounts[0];
-    connectWalletBtn.innerText = `✅ ${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`;
-    connectWalletBtn.disabled = true;
-  } catch (err) {
-    console.error("❌ Підключення MetaMask скасовано або помилка:", err);
-  }
-});
-
-
-  // 📐 Розміри
   const GAME_WIDTH = 800;
   const GAME_HEIGHT = 600;
-
   function resizeCanvas() {
-    const scale = Math.min(
-      window.innerWidth / GAME_WIDTH,
-      window.innerHeight / GAME_HEIGHT
-    );
+    const scale = Math.min(window.innerWidth / GAME_WIDTH, window.innerHeight / GAME_HEIGHT);
     canvas.width = GAME_WIDTH * scale;
     canvas.height = GAME_HEIGHT * scale;
     ctx.setTransform(scale, 0, 0, scale, 0, 0);
@@ -91,7 +77,6 @@ connectWalletBtn.addEventListener("click", async () => {
   window.addEventListener("resize", resizeCanvas);
   resizeCanvas();
 
-  // 🔁 Завантаження зображень
   const logo = new Image(); logo.src = "/assets/monad-logo.png";
   const gate = new Image(); gate.src = "/assets/gate.png";
   const background1 = new Image(); background1.src = "/assets/grass.png";
@@ -108,7 +93,6 @@ connectWalletBtn.addEventListener("click", async () => {
   ];
   const goodTypes = ["sheep-small", "sheep-big", "horse"];
 
-  // 🔊 Аудіо
   const sounds = {
     correct: new Audio("/assets/correct.mp3"),
     wrong: new Audio("/assets/wrong.mp3"),
@@ -116,7 +100,6 @@ connectWalletBtn.addEventListener("click", async () => {
     levelup: new Audio("/assets/level-up.mp3"),
   };
 
-  // 🧩 змінні гри
   let score = 0, level = 1, lives = 3, horseCollected = 0;
   let sheepList = [], explosionEffects = [], goodExplosionEffects = [];
   let slowMotion = false, slowMotionTimeout;
@@ -130,7 +113,7 @@ connectWalletBtn.addEventListener("click", async () => {
     let speed = 2 + Math.random() + level * 0.8;
     if (imgData.type === "sheep-big") speed = 1 + level * 0.5;
     if (slowMotion) speed *= 0.5;
-    sheepList.push({ img, x: Math.random()*(GAME_WIDTH-80), y: -80, speed, type: imgData.type });
+    sheepList.push({ img, x: Math.random() * (GAME_WIDTH - 80), y: -80, speed, type: imgData.type });
   }
 
   setInterval(() => {
@@ -138,14 +121,14 @@ connectWalletBtn.addEventListener("click", async () => {
   }, Math.max(300, 2000 - level * 200));
 
   canvas.addEventListener("click", e => {
-    if (!gameStarted || lives<=0 || paused) return;
+    if (!gameStarted || lives <= 0 || paused) return;
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / GAME_WIDTH;
-    const x = (e.clientX - rect.left)/scaleX;
-    const y = (e.clientY - rect.top)/scaleX;
+    const x = (e.clientX - rect.left) / scaleX;
+    const y = (e.clientY - rect.top) / scaleX;
     let hit = false;
-    sheepList.forEach((s,i) => {
-      if (!hit && x>=s.x && x<=s.x+80 && y>=s.y && y<=s.y+80) {
+    sheepList.forEach((s, i) => {
+      if (!hit && x >= s.x && x <= s.x + 80 && y >= s.y && y <= s.y + 80) {
         hit = true;
         processClick(s, i);
       }
@@ -167,25 +150,25 @@ connectWalletBtn.addEventListener("click", async () => {
       }
       sounds.correct.play();
       if (score % 5 === 0) sounds.levelup.play();
-      goodExplosionEffects.push({ x: s.x+40, y: s.y+40, radius:10, alpha:1, growthRate:2 });
+      goodExplosionEffects.push({ x: s.x + 40, y: s.y + 40, radius: 10, alpha: 1, growthRate: 2 });
     } else {
       lives--;
       sounds.wrong.play();
-      explosionEffects.push({ x: s.x+40, y: s.y+40, radius:10, alpha:1, growthRate:2 });
+      explosionEffects.push({ x: s.x + 40, y: s.y + 40, radius: 10, alpha: 1, growthRate: 2 });
     }
-    sheepList.splice(idx,1);
+    sheepList.splice(idx, 1);
   }
 
   function drawEffects(arr, color) {
-    for (let i=arr.length-1; i>=0; i--) {
+    for (let i = arr.length - 1; i >= 0; i--) {
       const ef = arr[i];
       ctx.beginPath();
-      ctx.arc(ef.x, ef.y, ef.radius, 0, 2*Math.PI);
+      ctx.arc(ef.x, ef.y, ef.radius, 0, 2 * Math.PI);
       ctx.fillStyle = `rgba(${color},${ef.alpha})`;
       ctx.fill();
       ef.radius += ef.growthRate;
       ef.alpha -= 0.05;
-      if (ef.alpha <= 0) arr.splice(i,1);
+      if (ef.alpha <= 0) arr.splice(i, 1);
     }
   }
 
@@ -195,55 +178,35 @@ connectWalletBtn.addEventListener("click", async () => {
     return background1;
   }
 
-// function updateLeaderboard() {
-//   const input = document.getElementById("playerName");
-//   const name = input?.value.trim() || "Anon";
-//   const data = JSON.parse(localStorage.getItem("leaderboard")||"[]");
-//   data.push({ name, score, date:new Date().toLocaleString() });
-//   const top = data.filter(e=>typeof e.score==="number")
-//                   .sort((a,b)=>b.score-a.score).slice(0,5);
-//   localStorage.setItem("leaderboard", JSON.stringify(top));
-//   submitScoreToBlockchain(score); // ✅ ВИКЛИК СЮДИ
-// }
-  // function drawLeaderboard() {
-  //   const data = JSON.parse(localStorage.getItem("leaderboard")||"[]");
-  //   ctx.fillStyle="rgba(255,255,255,0.9)";
-  //   ctx.fillRect(200,150,400,50+data.length*30);
-  //   ctx.fillStyle="purple"; ctx.font="18px Arial";
-  //   ctx.fillText("Leaderboard:", 300,180);
-  //   data.forEach((e,i)=> ctx.fillText(`${i+1}. ${e.name}: ${e.score}`, 220,210+i*30));
-  // }
-
   function draw() {
     if (!gameStarted || paused) return;
-    ctx.clearRect(0,0,GAME_WIDTH,GAME_HEIGHT);
-    ctx.drawImage(getBackground(),0,0,GAME_WIDTH,GAME_HEIGHT);
-    ctx.drawImage(gate, GAME_WIDTH/2-100, gateY, 200,100);
-    sheepList.forEach((s,i)=>{
+    ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+    ctx.drawImage(getBackground(), 0, 0, GAME_WIDTH, GAME_HEIGHT);
+    ctx.drawImage(gate, GAME_WIDTH / 2 - 100, gateY, 200, 100);
+    sheepList.forEach((s, i) => {
       s.y += s.speed;
-      ctx.drawImage(s.img,s.x,s.y,80,80);
-      if (s.y > gateY+80) {
+      ctx.drawImage(s.img, s.x, s.y, 80, 80);
+      if (s.y > gateY + 80) {
         if (goodTypes.includes(s.type)) {
           lives--; sounds.wrong.play();
         }
-        sheepList.splice(i,1);
+        sheepList.splice(i, 1);
       }
     });
     drawEffects(explosionEffects, "255,0,0");
     drawEffects(goodExplosionEffects, "0,255,0");
-    ctx.fillStyle="black"; ctx.font="20px Arial";
-    ctx.fillText(`Level: ${level}`,100,30);
-    ctx.fillText(`Lives: ${lives}`,100,60);
-    ctx.fillText(`Score: ${score}`,100,90);
-    ctx.drawImage(logo,10,10,60,60);
+    ctx.fillStyle = "black"; ctx.font = "20px Arial";
+    ctx.fillText(`Level: ${level}`, 100, 30);
+    ctx.fillText(`Lives: ${lives}`, 100, 60);
+    ctx.fillText(`Score: ${score}`, 100, 90);
+    ctx.drawImage(logo, 10, 10, 60, 60);
 
-if (lives <= 0) {
-  ctx.fillStyle="red"; ctx.font="40px Arial";
-  ctx.fillText("GAME OVER",250,200);
-  submitScoreToBlockchain(score); // ✅ залишити
-  fetchLeaderboardFromBlockchain(); // ✅ нова функція
+    if (lives <= 0) {
+      ctx.fillStyle = "red"; ctx.font = "40px Arial";
+      ctx.fillText("GAME OVER", 250, 200);
+      submitScoreToBlockchain(score);
+      fetchLeaderboardFromBlockchain(ctx); // ✅ передаємо ctx
       document.getElementById("restartBtn").style.display = "block";
-      // document.getElementById("playerName").style.display = "block";
       cancelAnimationFrame(animationId);
       return;
     }
@@ -251,36 +214,32 @@ if (lives <= 0) {
     animationId = requestAnimationFrame(draw);
   }
 
-  // ▶️ Ініціалізація кнопок
   const startBtn = document.getElementById("restartBtn");
-const startGameBtn = document.getElementById("startGameBtn");
-startGameBtn.addEventListener("click", () => {
-  startGameBtn.style.display = "none";
-  document.getElementById("instructions").style.display = "none";
-  gameStarted = true;
-  draw();
-});
+  const startGameBtn = document.getElementById("startGameBtn");
 
-
-//  const nameInput = document.getElementById("playerName");
-//   nameInput.style.display = "none";
-  startBtn.addEventListener("click", () => {
-    score=0; level=1; lives=3; horseCollected=0;
-    sheepList=[]; explosionEffects=[]; goodExplosionEffects=[];
-    paused=false; nameInput.style.display="none"; startBtn.style.display="none";
-    gameStarted=true;
-    document.getElementById("instructions").style.display="none";
-    draw();
-  });
-
-  // ▶️ Старт через інструкцію
-  document.getElementById("instructions").addEventListener("click", () => {
-    document.getElementById("instructions").style.display="none";
+  startGameBtn.addEventListener("click", () => {
+    startGameBtn.style.display = "none";
+    document.getElementById("instructions").style.display = "none";
     gameStarted = true;
     draw();
   });
 
-  // ⏸️ Пауза
+  startBtn.addEventListener("click", () => {
+    score = 0; level = 1; lives = 3; horseCollected = 0;
+    sheepList = []; explosionEffects = []; goodExplosionEffects = [];
+    paused = false;
+    startBtn.style.display = "none";
+    gameStarted = true;
+    document.getElementById("instructions").style.display = "none";
+    draw();
+  });
+
+  document.getElementById("instructions").addEventListener("click", () => {
+    document.getElementById("instructions").style.display = "none";
+    gameStarted = true;
+    draw();
+  });
+
   const pauseBtn = document.createElement("button");
   pauseBtn.innerText = "⏸️ Pause";
   pauseBtn.style.cssText = "position:absolute; top:10px; right:10px; z-index:10;";
@@ -290,3 +249,4 @@ startGameBtn.addEventListener("click", () => {
     pauseBtn.innerText = paused ? "▶️ Resume" : "⏸️ Pause";
     if (!paused) draw();
   });
+});
