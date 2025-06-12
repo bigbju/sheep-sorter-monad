@@ -52,11 +52,13 @@ async function fetchLeaderboardFromBlockchain(ctx) {
       ctx.fillText(`${i + 1}. ${label}: ${entry.score}`, 220, 210 + i * 30);
     });
 
-    if (!sorted.some(e => e.player === userAddress.toLowerCase()) && player) {
-      ctx.fillStyle = "blue";
-      const shortAddr = `${player.player.slice(0, 6)}...${player.player.slice(-4)}`;
-      ctx.fillText(`You: ${shortAddr}: ${Number(player.score)}`, 220, 210 + 5 * 30);
-    }
+const isUserInTop = sorted.some(e => e.player === userAddress.toLowerCase());
+
+if (!isUserInTop && player) {
+  ctx.fillStyle = "blue";
+  const shortAddr = `${player.player.slice(0, 6)}...${player.player.slice(-4)}`;
+  ctx.fillText(`You: ${shortAddr}: ${Number(player.score)}`, 220, 210 + sorted.length * 30 + 20);
+}
 
   } catch (error) {
     console.error("❌ Не вдалося отримати лідерборд з блокчейну:", error);
