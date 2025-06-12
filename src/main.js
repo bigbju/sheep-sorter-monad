@@ -217,10 +217,11 @@ connectWalletBtn.addEventListener("click", async () => {
     ctx.fillText(`Score: ${score}`,100,90);
     ctx.drawImage(logo,10,10,60,60);
 
-    if (lives <= 0) {
-      ctx.fillStyle="red"; ctx.font="40px Arial";
-      ctx.fillText("GAME OVER",250,200);
-      updateLeaderboard(); drawLeaderboard();
+if (lives <= 0) {
+  ctx.fillStyle="red"; ctx.font="40px Arial";
+  ctx.fillText("GAME OVER",250,200);
+  submitScoreToBlockchain(score); // ✅ залишити
+  fetchLeaderboardFromBlockchain(); // ✅ нова функція
       document.getElementById("restartBtn").style.display = "block";
       // document.getElementById("playerName").style.display = "block";
       cancelAnimationFrame(animationId);
