@@ -68,12 +68,14 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const GAME_WIDTH = 800;
   const GAME_HEIGHT = 600;
+
   function resizeCanvas() {
     const scale = Math.min(window.innerWidth / GAME_WIDTH, window.innerHeight / GAME_HEIGHT);
     canvas.width = GAME_WIDTH * scale;
     canvas.height = GAME_HEIGHT * scale;
     ctx.setTransform(scale, 0, 0, scale, 0, 0);
   }
+
   window.addEventListener("resize", resizeCanvas);
   resizeCanvas();
 
@@ -106,6 +108,18 @@ window.addEventListener("DOMContentLoaded", () => {
   let gameStarted = false, paused = false;
   const gateY = GAME_HEIGHT - 150;
   let animationId;
+
+  function updateLevel() {
+    if (score >= 30) level = 3;
+    else if (score >= 15) level = 2;
+    else level = 1;
+  }
+
+  function getBackground() {
+    if (level >= 3) return background3;
+    if (level === 2) return background2;
+    return background1;
+  }
 
   function spawnSheep() {
     const imgData = sheepImages[Math.floor(Math.random() * sheepImages.length)];
@@ -172,14 +186,11 @@ window.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function getBackground() {
-    if (level >= 3) return background3;
-    if (level === 2) return background2;
-    return background1;
-  }
-
   function draw() {
     if (!gameStarted || paused) return;
+
+    updateLevel(); // 🆕 оновлення рівня перед фоном
+
     ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
     ctx.drawImage(getBackground(), 0, 0, GAME_WIDTH, GAME_HEIGHT);
     ctx.drawImage(gate, GAME_WIDTH / 2 - 100, gateY, 200, 100);
@@ -205,7 +216,7 @@ window.addEventListener("DOMContentLoaded", () => {
       ctx.fillStyle = "red"; ctx.font = "40px Arial";
       ctx.fillText("GAME OVER", 250, 200);
       submitScoreToBlockchain(score);
-      fetchLeaderboardFromBlockchain(ctx); // ✅ передаємо ctx
+      fetchLeaderboardFromBlockchain(ctx);
       document.getElementById("restartBtn").style.display = "block";
       cancelAnimationFrame(animationId);
       return;
