@@ -10,6 +10,25 @@ window.addEventListener("DOMContentLoaded", () => {
   document.body.appendChild(canvas);
   const ctx = canvas.getContext("2d");
 
+  const connectWalletBtn = document.getElementById("connectWalletBtn");
+
+connectWalletBtn.addEventListener("click", async () => {
+  if (typeof window.ethereum === "undefined") {
+    alert("MetaMask не встановлено. Встанови його з https://metamask.io/");
+    return;
+  }
+
+  try {
+    const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+    const walletAddress = accounts[0];
+    connectWalletBtn.innerText = `✅ ${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`;
+    connectWalletBtn.disabled = true;
+  } catch (err) {
+    console.error("❌ Підключення MetaMask скасовано або помилка:", err);
+  }
+});
+
+
   // 📐 Розміри
   const GAME_WIDTH = 800;
   const GAME_HEIGHT = 600;
