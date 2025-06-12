@@ -1,66 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" /> <!-- Вказує кодування символів як UTF-8 -->
-  <title>Sheep Sorter Monad</title> <!-- Назва сторінки -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <!-- Адаптація для мобільних пристроїв -->
+  <meta charset="UTF-8" />
+  <title>Sheep Sorter Monad</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    /* Скидаємо відступи, приховуємо прокрутку */
     body {
       margin: 0;
       overflow: hidden;
     }
 
-    /* Кнопка рестарту по центру внизу */
+    /* Кнопка Рестарту */
     #restartBtn {
-      position: absolute; /* Абсолютне позиціонування */
-      bottom: 60px; /* Відступ віднизу */
-      left: 50%; /* Центрування по горизонталі */
-      transform: translateX(-50%); /* Точне горизонтальне центрування */
-      font-size: 24px; /* Розмір тексту */
-      padding: 10px 20px; /* Внутрішні відступи */
-      display: none; /* Прихована за замовчуванням */
-      z-index: 10; /* Поверх інших елементів */
+      position: absolute;
+      bottom: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 24px;
+      padding: 10px 20px;
+      display: none;
+      z-index: 10;
     }
 
-    /* Поле вводу імені нижче кнопки */
+    /* Поле вводу імені */
     #playerName {
-      position: absolute; /* Абсолютне позиціонування */
-      bottom: 20px; /* Відступ віднизу */
-      left: 50%; /* Центрування по горизонталі */
-      transform: translateX(-50%); /* Точне горизонтальне центрування */
-      font-size: 20px; /* Розмір тексту */
-      padding: 10px; /* Внутрішні відступи */
-      z-index: 10; /* Поверх інших елементів */
-      display: none; /* Приховане за замовчуванням */
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 20px;
+      padding: 10px;
+      z-index: 10;
+      display: none;
     }
 
-    /* Інструкція зверху по центру */
+    /* Інструкція */
     #instructions {
-      position: absolute; /* Абсолютне позиціонування */
-      top: 20px; /* Відступ зверху */
-      width: 100%; /* Ширина на всю сторінку */
-      text-align: center; /* Вирівнювання тексту по центру */
-      font-size: 20px; /* Розмір тексту */
-      font-weight: bold; /* Жирний текст */
-      color: #333; /* Колір тексту */
-      z-index: 10; /* Поверх інших елементів */
+      position: absolute;
+      top: 20px;
+      width: 100%;
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+      color: #333;
+      z-index: 10;
     }
 
-    /* Адаптивність для мобільних пристроїв */
+    /* Кнопка підключення гаманця */
+    #connectWalletBtn {
+      position: absolute;
+      top: 10px;
+      left: 100px;
+      z-index: 10;
+    }
+
+    /* Кнопка старту гри */
+    #startGameBtn {
+      position: absolute;
+      bottom: 120px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 24px;
+      padding: 10px 20px;
+      z-index: 10;
+    }
+
+    /* Підпис унизу */
+    #footer {
+      position: absolute;
+      bottom: 5px;
+      right: 10px;
+      font-size: 12px;
+      color: #666;
+      z-index: 5;
+      font-family: sans-serif;
+    }
+
+    /* Адаптація */
     @media (max-width: 600px) {
-      #restartBtn, #playerName {
-        font-size: 18px; /* Зменшення розміру тексту на маленьких екранах */
-        padding: 8px 16px; /* Зменшення відступів */
+      #restartBtn, #playerName, #startGameBtn {
+        font-size: 18px;
+        padding: 8px 16px;
       }
       #instructions {
-        font-size: 16px; /* Зменшення розміру тексту інструкції */
-        top: 10px; /* Зменшення відступу зверху */
+        font-size: 16px;
+        top: 10px;
       }
     }
   </style>
 </head>
 <body>
+
   <!-- Інструкція -->
   <div id="instructions">
     we catch sheep 🐑 horses 🐎<br />
@@ -73,11 +103,17 @@
   <!-- Поле вводу імені -->
   <input id="playerName" type="text" placeholder="Your name" />
 
-  <!-- JavaScript -->
-  <script type="module" src="/src/main.js"></script> <!-- Підключення основного скрипту -->
+  <!-- Кнопка підключення гаманця -->
+  <button id="connectWalletBtn">🔌 Connect Wallet</button>
+
+  <!-- Кнопка старту гри -->
+  <button id="startGameBtn">▶️ Start Game</button>
+
+  <!-- Підпис -->
+  <div id="footer">game created by Big or Bigbju for Monad community</div>
+
+  <!-- Підключення скрипта -->
+  <script type="module" src="/src/main.js"></script>
+
 </body>
 </html>
-
-<button id="connectWalletBtn" style="position:absolute; top:10px; left:100px; z-index:10;">
-  🔌 Connect Wallet
-</button>

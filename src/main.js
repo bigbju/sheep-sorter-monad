@@ -206,6 +206,15 @@ connectWalletBtn.addEventListener("click", async () => {
 
   // ▶️ Ініціалізація кнопок
   const startBtn = document.getElementById("restartBtn");
+const startGameBtn = document.getElementById("startGameBtn");
+startGameBtn.addEventListener("click", () => {
+  startGameBtn.style.display = "none";
+  document.getElementById("instructions").style.display = "none";
+  gameStarted = true;
+  draw();
+});
+
+
   const nameInput = document.getElementById("playerName");
   nameInput.style.display = "none";
   startBtn.addEventListener("click", () => {
