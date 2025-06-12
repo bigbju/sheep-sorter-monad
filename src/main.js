@@ -168,7 +168,7 @@ window.addEventListener("DOMContentLoaded", () => {
     const imgData = sheepImages[Math.floor(Math.random() * sheepImages.length)];
     const img = new Image(); img.src = imgData.src;
     let baseSpeed = 2 + Math.random();
-let levelBonus = 1 + (level - 1) * 0.1; // +10% за кожен новий рівень
+let levelBonus = 1 + (level - 1) * 0.2; // +20% за кожен новий рівень
 let speed = baseSpeed * levelBonus;
     if (imgData.type === "sheep-big") speed = 1 + level * 0.5;
     if (slowMotion) speed *= 0.5;
