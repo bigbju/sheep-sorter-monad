@@ -10,6 +10,16 @@
       overflow: hidden;
     }
 
+ /* Ігрове лого */
+#gameLogo {
+  position: absolute;
+  bottom: 180px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  z-index: 10;
+}
+
     /* Кнопка Рестарту */
     #restartBtn {
       position: absolute;
@@ -107,7 +117,7 @@
   <button id="connectWalletBtn">🔌 Connect Wallet</button>
 
   <!-- Лого гри -->
-<img id="gameLogo" src="Logo_horse.png" alt="Game Logo">
+<img id="gameLogo" src="./assets/Logo_horse.png" alt="Logo Horse" />
 
   <!-- Кнопка старту гри -->
   <button id="startGameBtn">▶️ Start Game</button>
@@ -126,7 +136,6 @@
     logo.style.display = 'none';
   });
 </script>
-
 
   
 </body>
