@@ -1,4 +1,27 @@
 // src/main.js — запускається через <script type="module" src="/src/main.js">
+import { ethers } from "ethers";
+import { CONTRACT_ADDRESS, CONTRACT_ABI } from "./contractABI.js";
+
+// відправка score в блокчейн
+async function submitScoreToBlockchain(score) {
+  if (typeof window.ethereum === "undefined") {
+    console.warn("🦊 MetaMask не встановлений");
+    return;
+  }
+
+  try {
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const signer = await provider.getSigner();
+    const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+
+    const tx = await contract.submitScore(score);
+    console.log("⏳ Транзакція створена:", tx.hash);
+    await tx.wait();
+    console.log("✅ Транзакція завершена:", tx.hash);
+  } catch (error) {
+    console.error("❌ Помилка при відправці score в блокчейн:", error);
+  }
+}
 
 // Запускаємо, коли DOM завантажено
 window.addEventListener("DOMContentLoaded", () => {
@@ -149,15 +172,18 @@ connectWalletBtn.addEventListener("click", async () => {
     return background1;
   }
 
-  function updateLeaderboard() {
-    const input = document.getElementById("playerName");
-    const name = input?.value.trim() || "Anon";
-    const data = JSON.parse(localStorage.getItem("leaderboard")||"[]");
-    data.push({ name, score, date:new Date().toLocaleString() });
-    const top = data.filter(e=>typeof e.score==="number")
-                    .sort((a,b)=>b.score-a.score).slice(0,5);
-    localStorage.setItem("leaderboard", JSON.stringify(top));
-  }
+function updateLeaderboard() {
+  const input = document.getElementById("playerName");
+  const name = input?.value.trim() || "Anon";
+  const data = JSON.parse(localStorage.getItem("leaderboard")||"[]");
+  data.push({ name, score, date:new Date().toLocaleString() });
+  const top = data.filter(e=>typeof e.score==="number")
+                  .sort((a,b)=>b.score-a.score).slice(0,5);
+  localStorage.setItem("leaderboard", JSON.stringify(top));
+
+  submitScoreToBlockchain(score); // ✅ ВИКЛИК СЮДИ
+}
+
 
   function drawLeaderboard() {
     const data = JSON.parse(localStorage.getItem("leaderboard")||"[]");
