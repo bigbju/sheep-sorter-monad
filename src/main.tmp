@@ -23,23 +23,47 @@ async function submitScoreToBlockchain(score) {
 async function fetchLeaderboardFromBlockchain(ctx) {
   try {
     const provider = new ethers.BrowserProvider(window.ethereum);
+    const signer = await provider.getSigner();
+    const userAddress = await signer.getAddress();
     const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
     const leaderboard = await contract.getTopPlayers();
 
-    ctx.fillStyle = "rgba(255,255,255,0.9)";
-    ctx.fillRect(200, 150, 400, 200);
-    ctx.fillStyle = "purple";
-    ctx.font = "18px Arial";
-    ctx.fillText("🏆 Leaderboard:", 300, 180);
+    // Сортуємо по спаданню score
+    const sorted = leaderboard
+      .map(entry => ({
+        player: entry.player.toLowerCase(),
+        score: Number(entry.score)
+      }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5); // Топ 5
 
-    leaderboard.forEach((entry, i) => {
-      const shortAddress = `${entry.player.slice(0, 6)}...${entry.player.slice(-4)}`;
-      ctx.fillText(`${i + 1}. ${shortAddress}: ${entry.score.toString()}`, 220, 210 + i * 30);
+    const player = leaderboard.find(e => e.player.toLowerCase() === userAddress.toLowerCase());
+
+    // Вивід на canvas
+    ctx.fillStyle = "rgba(255,255,255,0.9)";
+    ctx.fillRect(200, 150, 400, 250);
+    ctx.fillStyle = "purple";
+    ctx.font = "20px Arial";
+    ctx.fillText("🏆 Top 5 Leaderboard", 280, 180);
+
+    sorted.forEach((entry, i) => {
+      const shortAddr = `${entry.player.slice(0, 6)}...${entry.player.slice(-4)}`;
+      ctx.fillStyle = entry.player === userAddress.toLowerCase() ? "green" : "black";
+      ctx.fillText(`${i + 1}. ${shortAddr}: ${entry.score}`, 220, 210 + i * 30);
     });
+
+    // Поточний гравець нижче, якщо його немає в топ-5
+    if (!sorted.some(e => e.player === userAddress.toLowerCase()) && player) {
+      ctx.fillStyle = "blue";
+      const shortAddr = `${player.player.slice(0, 6)}...${player.player.slice(-4)}`;
+      ctx.fillText(`You: ${shortAddr}: ${player.score}`, 220, 210 + 5 * 30);
+    }
+
   } catch (error) {
     console.error("❌ Не вдалося отримати лідерборд з блокчейну:", error);
   }
 }
+
 
 window.addEventListener("DOMContentLoaded", () => {
   const canvas = document.createElement("canvas");
