@@ -1,252 +1,174 @@
-import { ethers } from "ethers";
-import { CONTRACT_ADDRESS, CONTRACT_ABI } from "./contractABI.js";
+// === main.js ===
 
-async function submitScoreToBlockchain(score) {
-  if (typeof window.ethereum === "undefined") {
-    console.warn("🦊 MetaMask не встановлений");
-    return;
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let sheepImages = [
+  { src: "/assets/sheep1.png", type: "sheep-small" },
+  { src: "/assets/sheep2.png", type: "sheep-big" },
+  { src: "/assets/horse.png", type: "horse" },
+  { src: "/assets/moyaki.png", type: "moyaki" },
+  { src: "/assets/chog.png", type: "chog" },
+  { src: "/assets/star.png", type: "star" }, // ⭐️ НОВЕ
+  { src: "/assets/bomb.png", type: "bomb" }, // 💣 НОВЕ
+];
+
+let sheepArray = [];
+let score = 0;
+let level = 1;
+let lives = 3;
+let horseClickCount = 0;
+let slowMotion = false;
+let slowMotionTimer = 0;
+
+const sounds = {
+  hit: new Audio("/assets/hit.mp3"),
+  miss: new Audio("/assets/miss.mp3"),
+  explosion: new Audio("/assets/explosion.mp3"),
+  star: new Audio("/assets/star.mp3")
+};
+
+class Sheep {
+  constructor(image, type) {
+    this.image = new Image();
+    this.image.src = image;
+    this.type = type;
+    this.x = Math.random() * canvas.width;
+    this.y = -100;
+    this.size = 80 + Math.random() * 40;
+    this.speed = slowMotion ? 1 + Math.random() * 1 : 2 + Math.random() * 2;
+    this.clicked = false;
   }
 
-  try {
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    const signer = await provider.getSigner();
-    const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-    const tx = await contract.submitScore(score);
-    console.log("⏳ Транзакція створена:", tx.hash);
-    await tx.wait();
-    console.log("✅ Транзакція завершена:", tx.hash);
-  } catch (error) {
-    console.error("❌ Помилка при відправці score в блокчейн:", error);
+  update() {
+    this.y += this.speed;
+  }
+
+  draw() {
+    ctx.drawImage(this.image, this.x, this.y, this.size, this.size);
   }
 }
 
-async function fetchLeaderboardFromBlockchain(ctx) {
-  try {
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
-    const leaderboard = await contract.getTopPlayers();
-
-    ctx.fillStyle = "rgba(255,255,255,0.9)";
-    ctx.fillRect(200, 150, 400, 200);
-    ctx.fillStyle = "purple";
-    ctx.font = "18px Arial";
-    ctx.fillText("🏆 Leaderboard:", 300, 180);
-
-    leaderboard.forEach((entry, i) => {
-      const shortAddress = `${entry.player.slice(0, 6)}...${entry.player.slice(-4)}`;
-      ctx.fillText(`${i + 1}. ${shortAddress}: ${entry.score.toString()}`, 220, 210 + i * 30);
-    });
-  } catch (error) {
-    console.error("❌ Не вдалося отримати лідерборд з блокчейну:", error);
+function spawnSheep() {
+  let random = Math.random();
+  let img;
+  if (random < 0.02) {
+    img = sheepImages.find(s => s.type === "star");
+  } else if (random < 0.07) {
+    img = sheepImages.find(s => s.type === "bomb");
+  } else {
+    img = sheepImages[Math.floor(Math.random() * (sheepImages.length - 2))];
   }
+  sheepArray.push(new Sheep(img.src, img.type));
 }
 
-window.addEventListener("DOMContentLoaded", () => {
-  const canvas = document.createElement("canvas");
-  canvas.style.position = "absolute";
-  canvas.style.top = 0;
-  canvas.style.left = 0;
-  document.body.appendChild(canvas);
-  const ctx = canvas.getContext("2d");
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  sheepArray.forEach((sheep, index) => {
+    sheep.update();
+    sheep.draw();
+    if (sheep.y > canvas.height && !sheep.clicked) {
+      if (["sheep-small", "sheep-big", "horse", "star"].includes(sheep.type)) {
+        lives--;
+      }
+      sheepArray.splice(index, 1);
+    }
+  });
+  ctx.fillStyle = "black";
+  ctx.font = "24px Arial";
+  ctx.fillText(`Score: ${score} | Lives: ${lives} | Level: ${level}`, 20, 40);
+}
 
-  const connectWalletBtn = document.getElementById("connectWalletBtn");
-  connectWalletBtn.addEventListener("click", async () => {
-    if (typeof window.ethereum === "undefined") {
-      alert("MetaMask не встановлено. Встанови його з https://metamask.io/");
+function gameLoop() {
+  draw();
+  if (slowMotion) {
+    slowMotionTimer--;
+    if (slowMotionTimer <= 0) slowMotion = false;
+  }
+  requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+setInterval(spawnSheep, 1000);
+
+canvas.addEventListener("click", (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  for (let i = 0; i < sheepArray.length; i++) {
+    const s = sheepArray[i];
+    if (
+      x >= s.x &&
+      x <= s.x + s.size &&
+      y >= s.y &&
+      y <= s.y + s.size
+    ) {
+      processClick(s, i);
       return;
     }
-
-    try {
-      const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-      const walletAddress = accounts[0];
-      connectWalletBtn.innerText = `✅ ${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`;
-      connectWalletBtn.disabled = true;
-    } catch (err) {
-      console.error("❌ Підключення MetaMask скасовано або помилка:", err);
-    }
-  });
-
-  const GAME_WIDTH = 800;
-  const GAME_HEIGHT = 600;
-  function resizeCanvas() {
-    const scale = Math.min(window.innerWidth / GAME_WIDTH, window.innerHeight / GAME_HEIGHT);
-    canvas.width = GAME_WIDTH * scale;
-    canvas.height = GAME_HEIGHT * scale;
-    ctx.setTransform(scale, 0, 0, scale, 0, 0);
   }
-  window.addEventListener("resize", resizeCanvas);
-  resizeCanvas();
-
-  const logo = new Image(); logo.src = "/assets/monad-logo.png";
-  const gate = new Image(); gate.src = "/assets/gate.png";
-  const background1 = new Image(); background1.src = "/assets/grass.png";
-  const background2 = new Image(); background2.src = "/assets/background2.png";
-  const background3 = new Image(); background3.src = "/assets/background3.png";
-
-  const sheepImages = [
-    { src: "/assets/sheep-small.png", type: "sheep-small" },
-    { src: "/assets/sheep-big.png", type: "sheep-big" },
-    { src: "/assets/horse.png", type: "horse" },
-    { src: "/assets/chog.png", type: "bad" },
-    { src: "/assets/molandak.png", type: "bad" },
-    { src: "/assets/moyaki.png", type: "bad" }
-  ];
-  const goodTypes = ["sheep-small", "sheep-big", "horse"];
-
-  const sounds = {
-    correct: new Audio("/assets/correct.mp3"),
-    wrong: new Audio("/assets/wrong.mp3"),
-    click: new Audio("/assets/click.mp3"),
-    levelup: new Audio("/assets/level-up.mp3"),
-  };
-
-  let score = 0, level = 1, lives = 3, horseCollected = 0;
-  let sheepList = [], explosionEffects = [], goodExplosionEffects = [];
-  let slowMotion = false, slowMotionTimeout;
-  let gameStarted = false, paused = false;
-  const gateY = GAME_HEIGHT - 150;
-  let animationId;
-
-  function spawnSheep() {
-    const imgData = sheepImages[Math.floor(Math.random() * sheepImages.length)];
-    const img = new Image(); img.src = imgData.src;
-    let speed = 2 + Math.random() + level * 0.8;
-    if (imgData.type === "sheep-big") speed = 1 + level * 0.5;
-    if (slowMotion) speed *= 0.5;
-    sheepList.push({ img, x: Math.random() * (GAME_WIDTH - 80), y: -80, speed, type: imgData.type });
-  }
-
-  setInterval(() => {
-    if (gameStarted && lives > 0 && !paused) spawnSheep();
-  }, Math.max(300, 2000 - level * 200));
-
-  canvas.addEventListener("click", e => {
-    if (!gameStarted || lives <= 0 || paused) return;
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / GAME_WIDTH;
-    const x = (e.clientX - rect.left) / scaleX;
-    const y = (e.clientY - rect.top) / scaleX;
-    let hit = false;
-    sheepList.forEach((s, i) => {
-      if (!hit && x >= s.x && x <= s.x + 80 && y >= s.y && y <= s.y + 80) {
-        hit = true;
-        processClick(s, i);
-      }
-    });
-    if (!hit) sounds.click.play();
-  });
-
-  function processClick(s, idx) {
-    if (goodTypes.includes(s.type)) {
-      if (s.type === "horse") {
-        score += 3; horseCollected++;
-        if (horseCollected % 5 === 0) lives++;
-      } else if (s.type === "sheep-small") score++;
-      else if (s.type === "sheep-big") {
-        score++;
-        slowMotion = true;
-        clearTimeout(slowMotionTimeout);
-        slowMotionTimeout = setTimeout(() => slowMotion = false, 5000);
-      }
-      sounds.correct.play();
-      if (score % 5 === 0) sounds.levelup.play();
-      goodExplosionEffects.push({ x: s.x + 40, y: s.y + 40, radius: 10, alpha: 1, growthRate: 2 });
-    } else {
-      lives--;
-      sounds.wrong.play();
-      explosionEffects.push({ x: s.x + 40, y: s.y + 40, radius: 10, alpha: 1, growthRate: 2 });
-    }
-    sheepList.splice(idx, 1);
-  }
-
-  function drawEffects(arr, color) {
-    for (let i = arr.length - 1; i >= 0; i--) {
-      const ef = arr[i];
-      ctx.beginPath();
-      ctx.arc(ef.x, ef.y, ef.radius, 0, 2 * Math.PI);
-      ctx.fillStyle = `rgba(${color},${ef.alpha})`;
-      ctx.fill();
-      ef.radius += ef.growthRate;
-      ef.alpha -= 0.05;
-      if (ef.alpha <= 0) arr.splice(i, 1);
-    }
-  }
-
-  function getBackground() {
-    if (level >= 3) return background3;
-    if (level === 2) return background2;
-    return background1;
-  }
-
-  function draw() {
-    if (!gameStarted || paused) return;
-    ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-    ctx.drawImage(getBackground(), 0, 0, GAME_WIDTH, GAME_HEIGHT);
-    ctx.drawImage(gate, GAME_WIDTH / 2 - 100, gateY, 200, 100);
-    sheepList.forEach((s, i) => {
-      s.y += s.speed;
-      ctx.drawImage(s.img, s.x, s.y, 80, 80);
-      if (s.y > gateY + 80) {
-        if (goodTypes.includes(s.type)) {
-          lives--; sounds.wrong.play();
-        }
-        sheepList.splice(i, 1);
-      }
-    });
-    drawEffects(explosionEffects, "255,0,0");
-    drawEffects(goodExplosionEffects, "0,255,0");
-    ctx.fillStyle = "black"; ctx.font = "20px Arial";
-    ctx.fillText(`Level: ${level}`, 100, 30);
-    ctx.fillText(`Lives: ${lives}`, 100, 60);
-    ctx.fillText(`Score: ${score}`, 100, 90);
-    ctx.drawImage(logo, 10, 10, 60, 60);
-
-    if (lives <= 0) {
-      ctx.fillStyle = "red"; ctx.font = "40px Arial";
-      ctx.fillText("GAME OVER", 250, 200);
-      submitScoreToBlockchain(score);
-      fetchLeaderboardFromBlockchain(ctx); // ✅ передаємо ctx
-      document.getElementById("restartBtn").style.display = "block";
-      cancelAnimationFrame(animationId);
-      return;
-    }
-
-    animationId = requestAnimationFrame(draw);
-  }
-
-  const startBtn = document.getElementById("restartBtn");
-  const startGameBtn = document.getElementById("startGameBtn");
-
-  startGameBtn.addEventListener("click", () => {
-    startGameBtn.style.display = "none";
-    document.getElementById("instructions").style.display = "none";
-    gameStarted = true;
-    draw();
-  });
-
-  startBtn.addEventListener("click", () => {
-    score = 0; level = 1; lives = 3; horseCollected = 0;
-    sheepList = []; explosionEffects = []; goodExplosionEffects = [];
-    paused = false;
-    startBtn.style.display = "none";
-    gameStarted = true;
-    document.getElementById("instructions").style.display = "none";
-    draw();
-  });
-
-  document.getElementById("instructions").addEventListener("click", () => {
-    document.getElementById("instructions").style.display = "none";
-    gameStarted = true;
-    draw();
-  });
-
-  const pauseBtn = document.createElement("button");
-  pauseBtn.innerText = "⏸️ Pause";
-  pauseBtn.style.cssText = "position:absolute; top:10px; right:10px; z-index:10;";
-  document.body.appendChild(pauseBtn);
-  pauseBtn.addEventListener("click", () => {
-    paused = !paused;
-    pauseBtn.innerText = paused ? "▶️ Resume" : "⏸️ Pause";
-    if (!paused) draw();
-  });
+  sounds.miss.play();
 });
+
+function processClick(s, index) {
+  if (s.clicked) return;
+  s.clicked = true;
+  switch (s.type) {
+    case "sheep-small":
+      score++;
+      break;
+    case "sheep-big":
+      score += 2;
+      slowMotion = true;
+      slowMotionTimer = 300; // ~5 секунд при 60 FPS
+      break;
+    case "horse":
+      score += 3;
+      horseClickCount++;
+      if (horseClickCount >= 5) {
+        lives++;
+        horseClickCount = 0;
+      }
+      break;
+    case "star":
+      score += 10;
+      sounds.star.play();
+      break;
+    case "bomb":
+      lives--;
+      handleBombEffect(index);
+      sounds.explosion.play();
+      break;
+    case "moyaki":
+      score = Math.max(0, score - 1);
+      break;
+    case "chog":
+      lives--;
+      break;
+  }
+  level = Math.floor(score / 10) + 1;
+  sheepArray.splice(index, 1);
+  sounds.hit.play();
+}
+
+function handleBombEffect(centerIndex) {
+  const targets = getObjectsNear(centerIndex);
+  targets.forEach(i => {
+    if (!sheepArray[i].clicked) {
+      sheepArray[i].clicked = true;
+      sheepArray.splice(i, 1);
+    }
+  });
+}
+
+function getObjectsNear(index) {
+  let indices = [];
+  for (let i = Math.max(0, index - 1); i <= Math.min(sheepArray.length - 1, index + 1); i++) {
+    if (i !== index) indices.push(i);
+  }
+  return indices;
+}
+
+// === КІНЕЦЬ ===
