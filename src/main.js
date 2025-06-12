@@ -293,4 +293,3 @@ startGameBtn.addEventListener("click", () => {
     pauseBtn.innerText = paused ? "▶️ Resume" : "⏸️ Pause";
     if (!paused) draw();
   });
-});
