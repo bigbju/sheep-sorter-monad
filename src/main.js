@@ -324,6 +324,13 @@ startBtn.addEventListener("click", () => {
   pauseBtn.style.display = "block"; // 🛠 Показуємо паузу після старту
   gameStarted = true;
   paused = false; // 🛠 Скидаємо паузу
+  
+  // Сховати інструкцію з index.html
+  const instructions = document.getElementById("instructions");
+  if (instructions) {
+    instructions.style.display = "none";
+  }
+
   draw();
 });
 
