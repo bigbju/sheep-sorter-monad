@@ -24,10 +24,11 @@ async function fetchLeaderboardFromBlockchain(ctx) {
   try {
     const provider = new ethers.BrowserProvider(window.ethereum);
     const signer = await provider.getSigner();
-    const userAddress = await signer.getAddress();
+    const userAddress = (await signer.getAddress()).toLowerCase();
     const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
     const leaderboard = await contract.getTopPlayers();
 
+    // Формуємо масив з гравцями і оцінками
     const sorted = leaderboard
       .map(entry => ({
         player: entry.player.toLowerCase(),
@@ -36,34 +37,37 @@ async function fetchLeaderboardFromBlockchain(ctx) {
       .sort((a, b) => b.score - a.score)
       .slice(0, 5); // Топ 5
 
-    const player = leaderboard.find(e => e.player.toLowerCase() === userAddress.toLowerCase());
+    // Знаходимо записи користувача в повному лідерборді
+    const player = leaderboard.find(e => e.player.toLowerCase() === userAddress);
 
-    // Малювання фону
+    // Малюємо фон лідерборду
     ctx.fillStyle = "rgba(255,255,255,0.9)";
     ctx.fillRect(200, 150, 400, 250);
     ctx.fillStyle = "purple";
     ctx.font = "20px Arial";
     ctx.fillText("🏆 Top 5 Leaderboard", 280, 180);
 
+    // Малюємо топ 5
     sorted.forEach((entry, i) => {
-      const isUser = entry.player === userAddress.toLowerCase();
+      const isUser = entry.player === userAddress;
       const label = isUser ? "You" : `${entry.player.slice(0, 6)}...${entry.player.slice(-4)}`;
       ctx.fillStyle = isUser ? "green" : "black";
       ctx.fillText(`${i + 1}. ${label}: ${entry.score}`, 220, 210 + i * 30);
     });
 
-const isUserInTop = sorted.some(e => e.player === userAddress.toLowerCase());
-
-if (!isUserInTop && player) {
-  ctx.fillStyle = "blue";
-  const shortAddr = `${player.player.slice(0, 6)}...${player.player.slice(-4)}`;
-  ctx.fillText(`You: ${shortAddr}: ${Number(player.score)}`, 220, 210 + sorted.length * 30 + 20);
-}
+    // Якщо користувач НЕ в топ 5, але є в лідерборді — виводимо окремо
+    const isUserInTop = sorted.some(e => e.player === userAddress);
+    if (!isUserInTop && player) {
+      ctx.fillStyle = "blue";
+      const shortAddr = `${player.player.slice(0, 6)}...${player.player.slice(-4)}`;
+      ctx.fillText(`You: ${shortAddr}: ${Number(player.score)}`, 220, 210 + sorted.length * 30 + 20);
+    }
 
   } catch (error) {
     console.error("❌ Не вдалося отримати лідерборд з блокчейну:", error);
   }
 }
+
 
 
 
