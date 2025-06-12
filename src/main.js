@@ -20,65 +20,46 @@ async function submitScoreToBlockchain(score) {
   }
 }
 
-async function fetchLeaderboardFromBlockchain(ctx, score) {
+async function fetchLeaderboardFromBlockchain(ctx, userAddress, score) {
   try {
     const provider = new ethers.BrowserProvider(window.ethereum);
-    const signer = await provider.getSigner();
-    const userAddress = (await signer.getAddress()).toLowerCase();
     const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
-    const leaderboard = await contract.getTopPlayers();
 
-    // Формуємо масив з гравцями і оцінками
-    const sorted = leaderboard
-      .map(entry => ({
-        player: entry.player.toLowerCase(),
-        score: Number(entry.score)
-      }))
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 5); // Топ 5
+    const leaderboard = await contract.getTopPlayers(); // топ гравці
+    const fullLeaderboard = await contract.getAll();    // усі гравці
 
-    // Знаходимо записи користувача в повному лідерборді
-    const player = leaderboard.find(e => e.player.toLowerCase() === userAddress);
-
-let currentPlayer = player;
-
-if (!currentPlayer) {
-  currentPlayer = {
-    player: userAddress,
-    score: score
-  };
-  sorted.push(currentPlayer);
-}
-
-
-    // Малюємо фон лідерборду
-    ctx.fillStyle = "rgba(255,255,255,0.9)";
-    ctx.fillRect(200, 150, 400, 250);
-    ctx.fillStyle = "purple";
+    // Очистити canvas
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.fillStyle = "black";
     ctx.font = "20px Arial";
-    ctx.fillText("🏆 Top 5 Leaderboard", 280, 180);
+    ctx.fillText("Leaderboard:", 220, 30);
 
-    // Малюємо топ 5
-    sorted.forEach((entry, i) => {
-      const isUser = entry.player === userAddress;
-      const label = isUser ? "You" : `${entry.player.slice(0, 6)}...${entry.player.slice(-4)}`;
-      ctx.fillStyle = isUser ? "green" : "black";
-      ctx.fillText(`${i + 1}. ${label}: ${entry.score}`, 220, 210 + i * 30);
+    // Вивести топ-5
+    leaderboard.slice(0, 5).forEach((entry, index) => {
+      const shortAddr = `${entry.player.slice(0, 6)}...${entry.player.slice(-4)}`;
+      ctx.fillText(`${index + 1}. ${shortAddr}: ${Number(entry.score)}`, 220, 60 + index * 30);
     });
 
-    // Якщо користувач НЕ в топ 5, але є в лідерборді — виводимо окремо
-const isUserInTop = sorted.some(e => e.player === userAddress);
-if (!isUserInTop && currentPlayer) {
-  ctx.fillStyle = "blue";
-  const shortAddr = `${currentPlayer.player.slice(0, 6)}...${currentPlayer.player.slice(-4)}`;
-  ctx.fillText(`You: ${shortAddr}: ${Number(currentPlayer.score)}`, 220, 210 + sorted.length * 30 + 20);
-}
+    // Знайти поточного гравця у повному лідерборді
+    const player = fullLeaderboard.find(e => e.player.toLowerCase() === userAddress.toLowerCase());
 
+    const currentPlayer = player
+      ? { player: player.player.toLowerCase(), score: Number(player.score) }
+      : { player: userAddress, score: score };
 
-  } catch (error) {
-    console.error("❌ Не вдалося отримати лідерборд з блокчейну:", error);
+    const isUserInTop = leaderboard.some(e => e.player.toLowerCase() === userAddress.toLowerCase());
+
+    // Якщо користувача нема серед топ-5, але є дані — виводимо окремо
+    if (!isUserInTop && currentPlayer) {
+      ctx.fillStyle = "blue";
+      const shortAddr = `${currentPlayer.player.slice(0, 6)}...${currentPlayer.player.slice(-4)}`;
+      ctx.fillText(`You: ${shortAddr}: ${Number(currentPlayer.score)}`, 220, 60 + leaderboard.length * 30 + 20);
+    }
+  } catch (err) {
+    console.error("Помилка при завантаженні лідерборду:", err);
   }
 }
+
 
 
 
