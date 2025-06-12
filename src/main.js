@@ -172,27 +172,27 @@ connectWalletBtn.addEventListener("click", async () => {
     return background1;
   }
 
-function updateLeaderboard() {
-  const input = document.getElementById("playerName");
-  const name = input?.value.trim() || "Anon";
-  const data = JSON.parse(localStorage.getItem("leaderboard")||"[]");
-  data.push({ name, score, date:new Date().toLocaleString() });
-  const top = data.filter(e=>typeof e.score==="number")
-                  .sort((a,b)=>b.score-a.score).slice(0,5);
-  localStorage.setItem("leaderboard", JSON.stringify(top));
+// function updateLeaderboard() {
+//   const input = document.getElementById("playerName");
+//   const name = input?.value.trim() || "Anon";
+//   const data = JSON.parse(localStorage.getItem("leaderboard")||"[]");
+//   data.push({ name, score, date:new Date().toLocaleString() });
+//   const top = data.filter(e=>typeof e.score==="number")
+//                   .sort((a,b)=>b.score-a.score).slice(0,5);
+//   localStorage.setItem("leaderboard", JSON.stringify(top));
 
   submitScoreToBlockchain(score); // ✅ ВИКЛИК СЮДИ
 }
 
 
-  function drawLeaderboard() {
-    const data = JSON.parse(localStorage.getItem("leaderboard")||"[]");
-    ctx.fillStyle="rgba(255,255,255,0.9)";
-    ctx.fillRect(200,150,400,50+data.length*30);
-    ctx.fillStyle="purple"; ctx.font="18px Arial";
-    ctx.fillText("Leaderboard:", 300,180);
-    data.forEach((e,i)=> ctx.fillText(`${i+1}. ${e.name}: ${e.score}`, 220,210+i*30));
-  }
+  // function drawLeaderboard() {
+  //   const data = JSON.parse(localStorage.getItem("leaderboard")||"[]");
+  //   ctx.fillStyle="rgba(255,255,255,0.9)";
+  //   ctx.fillRect(200,150,400,50+data.length*30);
+  //   ctx.fillStyle="purple"; ctx.font="18px Arial";
+  //   ctx.fillText("Leaderboard:", 300,180);
+  //   data.forEach((e,i)=> ctx.fillText(`${i+1}. ${e.name}: ${e.score}`, 220,210+i*30));
+  // }
 
   function draw() {
     if (!gameStarted || paused) return;
@@ -222,7 +222,7 @@ function updateLeaderboard() {
       ctx.fillText("GAME OVER",250,200);
       updateLeaderboard(); drawLeaderboard();
       document.getElementById("restartBtn").style.display = "block";
-      document.getElementById("playerName").style.display = "block";
+      // document.getElementById("playerName").style.display = "block";
       cancelAnimationFrame(animationId);
       return;
     }
@@ -241,8 +241,8 @@ startGameBtn.addEventListener("click", () => {
 });
 
 
-  const nameInput = document.getElementById("playerName");
-  nameInput.style.display = "none";
+//  const nameInput = document.getElementById("playerName");
+//   nameInput.style.display = "none";
   startBtn.addEventListener("click", () => {
     score=0; level=1; lives=3; horseCollected=0;
     sheepList=[]; explosionEffects=[]; goodExplosionEffects=[];
