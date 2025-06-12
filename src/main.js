@@ -40,6 +40,14 @@ async function fetchLeaderboardFromBlockchain(ctx) {
     // Знаходимо записи користувача в повному лідерборді
     const player = leaderboard.find(e => e.player.toLowerCase() === userAddress);
 
+if (!player) {
+  // Якщо немає запису, додаємо вручну
+  sorted.push({
+    player: userAddress,
+    score: score // поточний локальний рахунок (якщо є)
+  });
+}
+
     // Малюємо фон лідерборду
     ctx.fillStyle = "rgba(255,255,255,0.9)";
     ctx.fillRect(200, 150, 400, 250);
