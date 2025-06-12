@@ -20,7 +20,7 @@ async function submitScoreToBlockchain(score) {
   }
 }
 
-async function fetchLeaderboardFromBlockchain(ctx) {
+async function fetchLeaderboardFromBlockchain(ctx, score) {
   try {
     const provider = new ethers.BrowserProvider(window.ethereum);
     const signer = await provider.getSigner();
@@ -254,7 +254,7 @@ window.addEventListener("DOMContentLoaded", () => {
       ctx.fillStyle = "red"; ctx.font = "40px Arial";
       ctx.fillText("GAME OVER", 250, 200);
       submitScoreToBlockchain(score);
-      fetchLeaderboardFromBlockchain(ctx);
+      fetchLeaderboardFromBlockchain(ctx, score);
       document.getElementById("restartBtn").style.display = "block";
       cancelAnimationFrame(animationId);
       return;
