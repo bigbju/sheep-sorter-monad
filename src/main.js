@@ -75,17 +75,6 @@ if (!isUserInTop && currentPlayer) {
 }
 
 
-const isUserInTop = sorted.some(e => e.player === userAddress);
-if (!isUserInTop && currentPlayer) {
-  ctx.fillStyle = "blue";
-  const shortAddr = `${currentPlayer.player.slice(0, 6)}...${currentPlayer.player.slice(-4)}`;
-  ctx.fillText(`You: ${shortAddr}: ${Number(currentPlayer.score)}`, 220, 210 + sorted.length * 30 + 20);
-}
-
-
-
-
-
   } catch (error) {
     console.error("❌ Не вдалося отримати лідерборд з блокчейну:", error);
   }
