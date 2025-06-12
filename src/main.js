@@ -23,6 +23,29 @@ async function submitScoreToBlockchain(score) {
   }
 }
 
+async function fetchLeaderboardFromBlockchain() {
+  try {
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
+    const leaderboard = await contract.getTopPlayers(); // 🔥 адаптуй до свого ABI
+
+    // Очистка і рендер
+    ctx.fillStyle="rgba(255,255,255,0.9)";
+    ctx.fillRect(200, 150, 400, 200);
+    ctx.fillStyle="purple";
+    ctx.font="18px Arial";
+    ctx.fillText("🏆 Leaderboard:", 300, 180);
+
+    leaderboard.forEach((entry, i) => {
+      const shortAddress = `${entry.player.slice(0, 6)}...${entry.player.slice(-4)}`;
+      ctx.fillText(`${i + 1}. ${shortAddress}: ${entry.score.toString()}`, 220, 210 + i * 30);
+    });
+  } catch (error) {
+    console.error("❌ Не вдалося отримати лідерборд з блокчейну:", error);
+  }
+}
+
+
 // Запускаємо, коли DOM завантажено
 window.addEventListener("DOMContentLoaded", () => {
   // 🎨 Створюємо canvas і додаємо до body
