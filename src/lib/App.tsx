@@ -1,38 +1,23 @@
-'use client'
+'use client';
 
-import { WagmiConfig, useAccount, useConnect, useDisconnect } from 'wagmi'
-import { config } from './lib/web3'
+import React from 'react';
+import { useAccount, useConnect, useDisconnect } from 'wagmi';
+import { SubmitScoreButton } from './SubmitScoreButton';
+import { ConnectWallet } from './ConnectWallet';
 
-function ConnectButton() {
-  const { address, isConnected } = useAccount()
-  const { connect, connectors } = useConnect()
-  const { disconnect } = useDisconnect()
-
-  if (isConnected) {
-    return (
-      <div>
-        <p>Connected: {address}</p>
-        <button onClick={() => disconnect()}>Disconnect</button>
-      </div>
-    )
-  }
+export default function App() {
+  const { address, isConnected } = useAccount();
 
   return (
-    <div>
-      {connectors.map((connector) => (
-        <button key={connector.id} onClick={() => connect({ connector })}>
-          Connect with {connector.name}
-        </button>
-      ))}
+    <div style={{ position: 'absolute', top: 20, left: 20, zIndex: 20 }}>
+      {isConnected ? (
+        <>
+          <p>Connected: {address}</p>
+          <SubmitScoreButton />
+        </>
+      ) : (
+        <ConnectWallet />
+      )}
     </div>
-  )
-}
-
-export default function AppWrapper() {
-  return (
-    <WagmiConfig config={config}>
-      <ConnectButton />
-      {/* решта гри */}
-    </WagmiConfig>
-  )
+  );
 }
