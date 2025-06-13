@@ -311,6 +311,28 @@ let speed = baseSpeed * levelBonus;
   });
 });
 
+// === Monad Network Switch ===
+async function switchToMonadNetwork() {
+  try {
+    await window.ethereum.request({
+      method: "wallet_addEthereumChain",
+      params: [{
+        chainId: "0x279f", // 10143 у hex
+        chainName: "Monad Testnet",
+        nativeCurrency: {
+          name: "Monad",
+          symbol: "MON",
+          decimals: 18,
+        },
+        rpcUrls: ["https://monad-testnet.drpc.org"],
+        blockExplorerUrls: ["https://testnet.monadexplorer.com"]
+      }]
+    });
+  } catch (error) {
+    console.error("⛔ Не вдалося додати Monad Testnet до MetaMask:", error);
+  }
+}
+
 // === Web3 / Metamask ===
 
 let currentAccount = null;
@@ -352,10 +374,10 @@ function updateWalletUI() {
   }
 }
 
-window.addEventListener("DOMContentLoaded", () => {
-  const walletBtn = document.getElementById("walletButton");
-  if (walletBtn) {
-    walletBtn.addEventListener("click", connectWallet);
-  }
-  checkWalletConnection();
-});
+// window.addEventListener("DOMContentLoaded", () => {
+//   const walletBtn = document.getElementById("walletButton");
+//   if (walletBtn) {
+//     walletBtn.addEventListener("click", connectWallet);
+//   }
+//   checkWalletConnection();
+// });
