@@ -1,25 +1,20 @@
-export const config = {
-  runtime: "edge",
-};
-
-export default async function handler(req: Request) {
-  return new Response(
-    `
+export async function GET(request) {
+  const html = `
     <!DOCTYPE html>
     <html>
       <head>
-        <meta property="fc:frame" content="vNext" />
-        <meta property="fc:frame:image" content="https://sheep-sorter.vercel.app/public/frame-preview.jpg" />
-        <meta property="fc:frame:button:1" content="Play Game" />
-        <meta property="fc:frame:post_url" content="https://sheep-sorter.vercel.app" />
+        <meta property="og:title" content="Sheep Sorter Game 🐑" />
+        <meta property="og:image" content="https://sheep-sorter-monad.vercel.app/og-image.png" />
+        <meta name="fc:frame" content="vNext" />
+        <meta name="fc:frame:image" content="https://sheep-sorter-monad.vercel.app/og-image.png" />
+        <meta name="fc:frame:button:1" content="Play Now" />
+        <meta name="fc:frame:button:1:action" content="link" />
+        <meta name="fc:frame:button:1:target" content="https://sheep-sorter-monad.vercel.app/" />
       </head>
       <body></body>
     </html>
-    `,
-    {
-      headers: {
-        "Content-Type": "text/html",
-      },
-    }
-  );
+  `;
+  return new Response(html, {
+    headers: { "Content-Type": "text/html" },
+  });
 }
