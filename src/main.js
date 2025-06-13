@@ -100,6 +100,9 @@ window.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
+
+          await switchToMonadNetwork(); // 🆕 Спочатку перемикаємо мережу
+          
       const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
       const walletAddress = accounts[0];
       connectWalletBtn.innerText = `✅ ${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`;
