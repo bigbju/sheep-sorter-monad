@@ -3,7 +3,7 @@ export async function GET() {
     JSON.stringify({
       name: "Sheep Sorter Game",
       description: "Sort sheep and compete on the blockchain.",
-      icon: "https://sheep-sorter-monad.vercel.app/icon.png",
+      icon: "https://sheep-sorter-monad.vercel.app/frame-preview.png",
       frame_url: "https://sheep-sorter-monad.vercel.app/api/frame",
       post_url: "https://sheep-sorter-monad.vercel.app/api/submit",
       developer: {
